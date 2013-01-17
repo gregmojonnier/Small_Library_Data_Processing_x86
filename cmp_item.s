@@ -1,3 +1,4 @@
+// @author Greg Mojonnier
 .data
 	theauthors:
 		.asciz "item1 author: %s\n ---- item2 author: %s\n\n"
@@ -18,6 +19,13 @@
 		pushl %ebp
 		movl %esp, %ebp
 
+		movl 12(%ebp), %eax
+		cmp $0x0, %eax
+		je ITEMS_ARE_EQUAL
+
+		movl 8(%ebp), %eax
+		cmp $0x0, %eax
+		je ITEMS_ARE_EQUAL
 
 // Push item argument's authors on to stack
 // for strcmp in reverse order
@@ -33,7 +41,7 @@
 
 		pushl $theauthors
 		call printf;
-		add $8, %esp
+		add $12, %esp
 
 		// 2nd argument item pointer
 		// push author
@@ -81,7 +89,7 @@
 		
 		pushl $thetitles
 		call printf
-		add $8, %esp
+		add $12, %esp
 
 		// 2nd argument item pointer
 		// push title
