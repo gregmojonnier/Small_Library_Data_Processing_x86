@@ -9,11 +9,6 @@
 find_item:
 	enter $0, $0
 
-// Verify global item list head pointer isn't null
-	movl items, %eax
-	cmp $0x0, %eax
-	je NO_MATCHING_ITEM_FOUND
-
 // Prepare to loop through list of items
 // %ecx will be our pointer to the Item we check each iteration
 	movl items, %ecx 
