@@ -1,201 +1,111 @@
 // @author Greg Mojonnier
 .data
-	theauthors:
-		.asciz "item1 author: %s\n ---- item2 author: %s\n\n"
-	thetitles:
-		.asciz "item1 title: %s\n ---- item2 title: %s\n\n"
-	theleftcid:
-		.asciz "item1 leftcid: %hu\n ---- item2 leftcid: %hu\n\n"
-	therightcid:
-		.asciz "item1 rightcid: %hu\n ---- item2 rightcid: %hu\n\n"
-	madeit:
-		.asciz "Made it to the equal titles!\n"
 
 .bss
 
 .text
-	.globl cmp_item
-	cmp_item:
-		pushl %ebp
-		movl %esp, %ebp
+.globl cmp_item
+cmp_item:
+	enter $0, $0
 
-		movl 12(%ebp), %eax
-		cmp $0x0, %eax
-		je ITEMS_ARE_EQUAL
+// Verify 2 arguments(Item pointers) aren't NULL
+// return 0 if either is NULL
+	// 2nd argument
+	movl 12(%ebp), %eax
+	cmp $0x0, %eax
+	je ITEMS_ARE_EQUAL
 
-		movl 8(%ebp), %eax
-		cmp $0x0, %eax
-		je ITEMS_ARE_EQUAL
+	// 1st argument
+	movl 8(%ebp), %eax
+	cmp $0x0, %eax
+	je ITEMS_ARE_EQUAL
 
-// Push item argument's authors on to stack
-// for strcmp in reverse order
-		// 2nd argument item pointer
-		// push author
-		movl 12(%ebp), %eax
-		pushl 8(%eax)
+// Start by comparing item's authors
+// Push item argument's authors on to stack for strcmp in reverse order
+// Author c-string starts at byte 8 within Item struct
 
-		// 1st argument item pointer
-		// push author
-		movl 8(%ebp), %edx
-		pushl 8(%edx)
+	// 2nd argument
+	movl 12(%ebp), %eax
+	pushl 8(%eax)
 
-		pushl $theauthors
-		call printf;
-		add $12, %esp
+	// 1st argument
+	movl 8(%ebp), %edx
+	pushl 8(%edx)
 
-		// 2nd argument item pointer
-		// push author
-		movl 12(%ebp), %eax
-		pushl 8(%eax)
+	call strcmp
+	add $8, %esp
 
-		// 1st argument item pointer
-		// push author
-		movl 8(%ebp), %edx
-		pushl 8(%edx)
+	cmp $0, %eax
+	je EQUAL_AUTHORS
+	jle ITEM1_HIGHER_PRECEDENCE
+	jge ITEM1_LOWER_PRECEDENCE
+EPILOGUE:
+	leave
+	ret	
 
-		call strcmp
-		add $8, %esp
-	
-		cmp $0, %eax
-		je EQUAL_AUTHORS
-		jle ITEM1_HIGHER_PRECEDENCE
-		jge ITEM1_LOWER_PRECEDENCE
+EQUAL_AUTHORS:
 
+// Since item's authors are equal compare by their title
+// Push item argument's titles on to stack for strcmp in reverse order
+// Title c-string starts at byte 12 within Item struct
 
-//		pushl %eax
-//		pushl $theresult
-//		call printf
-//		add $8, %esp
+	// 2nd argument
+	movl 12(%ebp), %eax
+	pushl 12(%eax)
 
-	EPILOGUE:
-		movl %ebp, %esp
-		pop %ebp
-		ret	
+	// 1st argument 
+	movl 8(%ebp), %eax
+	pushl 12(%eax)
 
-// implement yo
-	EQUAL_AUTHORS:
+	call strcmp
+	add $8, %esp
 
-// Push item argument's titles on to stack
-// for strcmp in reverse order
-		// 2nd argument item pointer
-		// push title
-		movl 12(%ebp), %eax
-		pushl 12(%eax)
+	cmp $0, %eax
+	je EQUAL_TITLES
+	jle ITEM1_HIGHER_PRECEDENCE
+	jge ITEM1_LOWER_PRECEDENCE
 
-		// 1st argument item pointer
-		// push title
-		movl 8(%ebp), %eax
-		pushl 12(%eax)
-		
-		pushl $thetitles
-		call printf
-		add $12, %esp
+EQUAL_TITLES:
 
-		// 2nd argument item pointer
-		// push title
-		movl 12(%ebp), %eax
-		pushl 12(%eax)
+// Since item's titles are equal compare by their CID
+// Lefthand CID starts at byte 16, righthand CID at byte 18(Their 2 bytes in size) 
 
-		// 1st argument item pointer
-		// push title
-		movl 8(%ebp), %eax
-		pushl 12(%eax)
+	// put item1's lefthand CID in %dx
+	movl 8(%ebp), %edx
+	movw 16(%edx), %dx
 
-		call strcmp
-		add $8, %esp
+	// put item2's lefthand CID in %ax
+	movl 12(%ebp), %eax
+	movw 16(%eax), %ax
+	cmp %ax, %dx
 
-		cmp $0, %eax
-		je EQUAL_TITLES
-		jle ITEM1_HIGHER_PRECEDENCE
-		jge ITEM1_LOWER_PRECEDENCE
+	jl ITEM1_HIGHER_PRECEDENCE
+	jg ITEM1_LOWER_PRECEDENCE
 
-	ITEM1_HIGHER_PRECEDENCE:
-		movl $-1, %eax
-		jmp EPILOGUE
+// both item's lefthand CID's are equal so check righthand CID's	
 
-	ITEM1_LOWER_PRECEDENCE:
-		movl $1, %eax
-		jmp EPILOGUE
+	// put item1's righthand CID in %dx
+	movl 8(%ebp), %edx
+	movw 18(%edx), %dx
 
-	ITEMS_ARE_EQUAL:
-		movl $0, %eax
-		jmp EPILOGUE 
+	// put item2's righthand CID in %ax
+	movl 12(%ebp), %eax
+	movw 18(%eax), %ax
 
-	EQUAL_TITLES:
+	cmp %ax, %dx
 
-		xor %eax, %eax
-		xor %ecx, %ecx
-		xor %edx, %edx
+	jg ITEM1_LOWER_PRECEDENCE
+	jl ITEM1_HIGHER_PRECEDENCE
+	jmp ITEMS_ARE_EQUAL 
 
-// Compare item1's lefthand CID with item2's
+ITEM1_HIGHER_PRECEDENCE:
+	movl $-1, %eax
+	jmp EPILOGUE
 
-		// put item2's lefthand CID in %ax
-		movl 12(%ebp), %ecx
-		movw 16(%ecx), %ax
-		pushl %eax
+ITEM1_LOWER_PRECEDENCE:
+	movl $1, %eax
+	jmp EPILOGUE
 
-		xor %ecx, %ecx 
-
-		// put item1's lefthand CID in %dx
-		movl 8(%ebp), %ecx
-		movw 16(%ecx), %dx
-		pushl %edx
-
-
-		//pushl %ax
-		//pushw %dx
-		pushl $theleftcid
-		call printf
-		add $12, %esp
-
-
-// Compare item1's lefthand CID with item2's
-		// put item1's lefthand CID in %dx
-		movl 8(%ebp), %edx
-		movw 16(%edx), %dx
-
-		// put item2's lefthand CID in %ax
-		movl 12(%ebp), %eax
-		movw 16(%eax), %ax
-		cmp %ax, %dx
-
-		jl ITEM1_HIGHER_PRECEDENCE
-		jg ITEM1_LOWER_PRECEDENCE
-	
-	// both item's lefthand CID's are equal so check righthand CID's	
-		xor %edx, %edx
-		xor %eax, %eax
-		xor %ecx, %ecx
-
-		// put item1's righthand CID in %dx
-		movl 8(%ebp), %ecx
-		movw 18(%ecx), %dx
-
-		xor %ecx, %ecx
-
-		// put item2's righthand CID in %ax
-		movl 12(%ebp), %ecx
-		movw 18(%ecx), %ax
-
-		pushl %eax
-		pushl %edx
-
-		pushl $therightcid
-		call printf
-		add $12, %esp
-
-		// put item1's righthand CID in %dx
-		movl 8(%ebp), %ecx
-		movw 18(%ecx), %dx
-
-		xor %ecx, %ecx
-
-		// put item2's righthand CID in %ax
-		movl 12(%ebp), %ecx
-		movw 18(%ecx), %ax
-
-		cmp %ax, %dx
-
-		jg ITEM1_LOWER_PRECEDENCE
-		jl ITEM1_HIGHER_PRECEDENCE
-		jmp ITEMS_ARE_EQUAL 
+ITEMS_ARE_EQUAL:
+	movl $0, %eax
+	jmp EPILOGUE 
