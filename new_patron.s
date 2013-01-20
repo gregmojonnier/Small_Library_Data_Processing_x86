@@ -4,6 +4,15 @@
 .bss
 
 .text
+/*
+* Patron* new_patron( char pid1, uint16_t pid2, char* name )
+*
+* Allocates a new Patron node. If the allocation succeeds, copies
+* the supplied arguments into the appropriate fields of the new node,
+* clears all other fields to 0, and returns the pointer to the new node.
+* If the allocation fails, returns a null pointer.
+*
+*/
 .globl new_patron
 new_patron:
 	enter $0, $0

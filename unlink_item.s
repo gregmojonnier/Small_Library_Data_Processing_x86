@@ -5,11 +5,19 @@
 
 .text
 .globl items
-.globl find_item
+
+/*
+* Item* unlink_item( uint16_t cid1, uint16_t cid_2 )
+*
+* Traverses the Item list and removes the item with the
+* specified CID. If this Item is found and removed from the list,
+* returns a pointer to the node that was removed; otherwise,
+* returns a null pointer.
+*
+*/
 .globl unlink_item
 unlink_item:
 	enter $0, $0
-
 
 
 	sub $8, %esp

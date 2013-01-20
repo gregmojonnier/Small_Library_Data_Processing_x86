@@ -6,6 +6,14 @@
 
 .text
 .globl patrons
+/*
+* Patron* find_patron( char pid1, uint16_t pid2 )
+*
+* Locates the Patron node which has the specified PID,
+* and returns a pointer to it; if the PID is not found,
+* returns a null pointer.
+*
+*/
 .globl find_patron
 find_patron:
 	enter $0, $0

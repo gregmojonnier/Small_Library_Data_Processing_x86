@@ -1,10 +1,17 @@
-
 // @author Greg Mojonnier
 .data
 
 .bss
 
 .text
+/*
+* int cmp_patron( Patron* p1, Patron* p2 )
+*
+* Compares the two patrons. If patron1 has higher precedence
+* than -1 is returned. If both are equal than 0 is returned.
+* If patron1 has lower precedence than 1 is returned.
+*
+*/
 .globl cmp_patron
 cmp_patron:
 	enter $0, $0

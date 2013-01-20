@@ -4,6 +4,13 @@
 .bss
 
 .text
+/*
+* Item* new_item( uint16_t cid1, uint16_t cid2, char* author, char* title, uint8_t copies)
+*
+* Allocates a new Item node. If the allocation succeeds, copies the supplied arguments
+* into the appropriate fields of the new node, clears all other fields to 0, and 
+* returns the pointer to the new node. If the allocation fails, returns a null pointer.
+*/
 .globl new_item
 new_item:
 	enter $0, $0

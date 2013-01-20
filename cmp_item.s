@@ -4,6 +4,14 @@
 .bss
 
 .text
+/*
+* int cmp_item( Item* i1, Item* i2 )
+*
+* Compares the two Items. If item1 has higher precedence
+* than -1 is returned. If both are equal than 0 is returned.
+* If item1 has lower precedence than 1 is returned.
+*
+*/
 .globl cmp_item
 cmp_item:
 	enter $0, $0

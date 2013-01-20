@@ -5,6 +5,14 @@
 
 .text
 .globl items
+/*
+* Item* find_item( uint16_t cid1, uint16_t cid2)
+*
+* Locates the Item node which has the specified CID, and
+* returns a pointer to it; if the CID is not found, returns
+* a null pointer.
+*
+*/
 .globl find_item
 find_item:
 	enter $0, $0
