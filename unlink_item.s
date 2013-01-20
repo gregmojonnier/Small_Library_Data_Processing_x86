@@ -19,9 +19,13 @@
 unlink_item:
 	enter $0, $0
 
-
+// Check if head item in list is item node to unlink
 	sub $8, %esp
 	movl items, %eax
+	
+	// Move head item at 0(%esp) and nothing at 4(%esp)
+	// the nothing at 4(%esp) is just a place holder in this
+	// call of does_cid_match_item but will be utilized in the loop below
 	movl %eax, (%esp)
 	call does_cid_match_item
 	
@@ -31,6 +35,7 @@ unlink_item:
 	jg HEAD_ITEM_IS_MATCH
 
 	add $8, %esp
+
 // Head list item is null, return null/exit
 	movl $0x0, %eax
 	jmp EPILOGUE
@@ -46,25 +51,24 @@ HEAD_ITEM_IS_MATCH:
 	jmp EPILOGUE
 
 // Prepare to loop through list of items
-// %ecx will be our pointer to the Item we check each iteration
-// %eax has current thing
+// %eax will be our pointer to the Item we check each iteration
 .L1_FIRST_START:
 	pop %eax
 	add $4, %esp
 .L1_START:
 
 	sub $8, %esp
-// store current
+// store predecessor at 4(%esp) and current at 0(%esp)
 	movl %eax, 4(%esp) 
 	movl (%eax), %eax
 	movl %eax, (%esp)
- // store current's next
 	call does_cid_match_item
 
 	cmp $0, %eax
 	pop %eax
 	pop %ecx
 	// %ecx is storing %eax's predecessor
+
 	je .L1_START
 	jg ITEM_IS_MATCH
 
@@ -74,11 +78,8 @@ HEAD_ITEM_IS_MATCH:
 
 ITEM_IS_MATCH:	
 
-	// %ecx is storing %eax's predecessor
-
-	// %eax = current, %ecx = predecessor
-
-	// move %eax's next into %edx
+	// Link up %eax's predecessor's next (%ecx)
+	// with %eax's next (%eax)
 	movl (%eax), %edx
 	movl %edx, (%ecx)
 
@@ -86,9 +87,21 @@ EPILOGUE:
 	leave
 	ret	
 
+/*
+* int does_cid_match_item( Item* i )
+*
+* Takes an Item* argument at 8(%ebp) and determines
+* if the cid matches the item.
+* The CID is already on the stack at lefthand cid 24(%ebp)
+* and righthand cid 28(%ebp). Item i's next is also on the stack
+* already at 12(%ebp) used in the item loop above.
+* It is mandatory that this function is only called after/ within
+* the unlink_item function above since it makes assumptions as to what
+* is already on the stack.
+*
+*
+*/
 does_cid_match_item:
-// takes item* @ 8(%ebp), this items next is also at 12(%ebp) but thats just saved for the loop
-// The lefthand cid @ 24(%ebp), righthand cid @ 28(%ebp)
 	enter $0, $0
 
 	movl $0x0, %eax
