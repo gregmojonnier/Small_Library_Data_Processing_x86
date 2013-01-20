@@ -21,10 +21,8 @@ new_item:
 
 // Zero out the following, Next pointer(byte 0)
 // first patron checked out item pointer(byte 4)
-// Count of item available for check out(byte 21)
 	movl $0x0, (%eax)
 	movl $0x0, 4(%eax)
-	movb $0x0, 21(%eax)
 
 // Move first arg, lefthand cid into(byte 16)
 	movw 8(%ebp), %dx
@@ -46,6 +44,8 @@ new_item:
 	movb 24(%ebp), %dl
 	movb %dl, 20(%eax)
 
+// Count of item available for check out(byte 21)
+	movb %dl, 21(%eax)
 EPILOGUE:
 	leave
 	ret	
